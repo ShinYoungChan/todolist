@@ -1,1 +1,2 @@
 /backend/go.*
+/backend/todo.db
