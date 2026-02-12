@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Main Start")
 
 	// 1. .env 로드 (파일이 없어도 서버는 뜰 수 있게Fatal 대신 Print)
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("go.env"); err != nil {
 		log.Println("경고: .env 파일을 찾을 수 없습니다. 기본 설정을 사용합니다.")
 	}
 
@@ -35,6 +35,11 @@ func main() {
 		dbPath = "todo.db"
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET이 설정되지 않았습니다!")
+	}
+
 	// 3. DB 연결 및 마이그레이션
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
@@ -47,7 +52,7 @@ func main() {
 
 	// 의존성 주입
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo, jwtSecret)
 	userHandler := handlers.NewUserHandler(userService)
 
 	r := gin.Default()
