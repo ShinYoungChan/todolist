@@ -17,3 +17,9 @@ type UserResponse struct {
 	UserID string `json:"user_id"`
 	Name   string `json:"name"`
 }
+
+// 로그인 요청용 구조체 (DTO)
+type LoginRequest struct {
+	UserID   string `json:"user_id" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}

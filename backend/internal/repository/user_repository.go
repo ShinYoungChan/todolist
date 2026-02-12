@@ -26,3 +26,10 @@ func (r *UserRepository) ExistByID(userID string) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func (r *UserRepository) FindByUserID(userID string) (*models.User, error) {
+	var user models.User
+	// 아이디로 유저 한 명을 찾음
+	err := r.db.Where("user_id = ?", userID).First(&user).Error
+	return &user, err
+}

@@ -41,3 +41,31 @@ func (h *UserHandler) Signup(c *gin.Context) {
 		"response": response,
 	})
 }
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var req models.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.service.LoginUser(req.UserID, req.Password)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := h.service.GenerateToken(user.ID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "로그인 성공",
+		"token":   token,
+		"user": gin.H{
+			"id":      user.ID,
+			"user_id": user.UserID,
+			"name":    user.Name,
+		},
+	})
+}
