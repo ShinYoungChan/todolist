@@ -46,7 +46,7 @@ func main() {
 		log.Fatalf("DB 연결 실패: %v", err)
 	}
 
-	if err := db.AutoMigrate(&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Todo{}); err != nil {
 		log.Fatalf("마이그레이션 실패: %v", err)
 	}
 
@@ -55,9 +55,14 @@ func main() {
 	userService := service.NewUserService(userRepo, jwtSecret)
 	userHandler := handlers.NewUserHandler(userService)
 
+	todoRepo := repository.NewTodoRepository(db)
+	todoService := service.NewTodoService(todoRepo)
+	todoHandler := handlers.NewTodoHandler(todoService)
+
 	r := gin.Default()
 
 	routes.SetupUserRoutes(r, userHandler)
+	routes.SetupTodoRoutes(r, todoHandler, jwtSecret)
 
 	r.Run(":" + port)
 }
