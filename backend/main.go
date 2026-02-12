@@ -61,6 +61,19 @@ func main() {
 
 	r := gin.Default()
 
+	// 💡 CORS 미들웨어 추가 (여기가 핵심!)
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+
 	routes.SetupUserRoutes(r, userHandler)
 	routes.SetupTodoRoutes(r, todoHandler, jwtSecret)
 
