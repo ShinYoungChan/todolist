@@ -31,7 +31,7 @@ import (
 2가지 방법
 
 1. pubspec.yaml 파일에서 dependencies 섹션에 dio 추가
-2. fluuter pub add dio로 패키지 설치
+2. flutter pub add dio로 패키지 설치
 
 <h3> 토큰 안전한 저장을 위한 패키지 설치</h3>
 

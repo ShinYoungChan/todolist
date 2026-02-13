@@ -80,4 +80,12 @@ class ApiService {
 
     return await dio.post("/todos", data: data);
   }
+
+  Future<Response> deleteTodo(int id) async {
+    return await dio.delete("/todos/$id");
+  }
+
+  Future<Response> updateTodoState(int id, bool status) async {
+    return await dio.put("/todos/$id", data: {"id": id, "status": status});
+  }
 }

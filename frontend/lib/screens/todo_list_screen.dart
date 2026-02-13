@@ -100,32 +100,57 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 snapshot.data!.data['todos']; // Dio response의 data 추출
 
             if (todos.isEmpty) {
-              return const Center(child: Text("할 일이 없어요!"));
+              return const Center(child: Text("할 일이 없어요! 추가해볼까요?"));
             }
 
             return ListView.builder(
               itemCount: todos.length,
               itemBuilder: (context, index) {
                 final todo = todos[index];
+                //final bool isDone = todo['status'] ?? false; // 완료 여부 변수화
                 return ListTile(
                   leading: Checkbox(
-                    value: todo['state'] ?? false,
-                    onChanged: (bool? value) {
+                    value: todo['status'] ?? false,
+                    onChanged: (bool? newValue) async {
                       // TODO: 업데이트 API 호출
+                      if (newValue == null) return;
+                      // 💡 현재 값이 뭔지, 그리고 바꾸려는 값이 뭔지 둘 다 찍어보세요.
+                      try {
+                        await _apiService.updateTodoState(todo['id'], newValue);
+                        if (mounted) {
+                          setState(() {
+                            todo['status'] = newValue;
+                          });
+                        }
+                      } catch (e) {
+                        print("업데이트 에러: $e");
+                      }
                     },
                   ),
                   title: Text(
                     todo['title'] ?? '제목 없음',
                     style: TextStyle(
-                      decoration: todo['state'] == true
+                      decoration: todo['status'] == true
                           ? TextDecoration.lineThrough
                           : null,
                     ),
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      // TODO: 삭제 API 호출
+                    onPressed: () async {
+                      try {
+                        await _apiService.deleteTodo(todo['id']);
+
+                        if (mounted) {
+                          // 삭제 성공시 화면 새로고침
+                          setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("삭제되었습니다.")),
+                          );
+                        }
+                      } catch (e) {
+                        print("삭제 에러: $e");
+                      }
                     },
                   ),
                 );
