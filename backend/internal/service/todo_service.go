@@ -49,8 +49,6 @@ func (s *TodoService) UpdateTodo(todoID uint, userID uint, data *models.Todo) er
 		todo.Content = data.Content
 	}
 
-	// Status는 bool이므로 무조건 덮어쓰거나,
-	// 혹은 상태가 변경될 때 특정 로직을 추가함
 	if todo.Status != data.Status {
 		todo.Status = data.Status
 		if todo.Status {
