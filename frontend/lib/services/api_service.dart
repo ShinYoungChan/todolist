@@ -51,9 +51,14 @@ class ApiService {
   }
 
   // 💡 3단계의 하이라이트: 할 일 목록 가져오기 테스트용
-  Future<Response> getTodos(String sortBy) async {
+  Future<Response> getTodos(String? sortBy, String? filter, String? keyword) async {
     // 이제 여기서는 헤더 설정을 전혀 안 해도 됩니다! 인터셉터가 해주니까요.
-    return await dio.get("/todos", queryParameters: {"sort": sortBy});
+    final response = await dio.get("/todos",queryParameters: {
+      if(sortBy!=null) "sort":sortBy,
+      if(filter!=null)"filter":filter,
+      if(keyword!=null&&keyword.isNotEmpty)"keyword":keyword,
+    });
+    return response;
   }
 
   /*
