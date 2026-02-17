@@ -88,4 +88,20 @@ class ApiService {
   Future<Response> updateTodoState(int id, bool status) async {
     return await dio.put("/todos/$id", data: {"id": id, "status": status});
   }
+
+  // api_service.dart 수정
+  Future<void> updateTodoDates(int id, {DateTime? startDate, DateTime? dueDate}) async {
+    try {
+      // 로컬 시간 기준으로 YYYY-MM-DDT00:00:00Z 형식을 수동으로 맞춰줍니다.
+      String formatDate(DateTime dt) {
+        return "${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}T00:00:00Z";
+      }
+      await dio.put("/todos/$id", data: {
+        if (startDate != null) "start_date": formatDate(startDate),
+        if (dueDate != null) "due_date": formatDate(dueDate),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

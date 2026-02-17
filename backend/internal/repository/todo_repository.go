@@ -23,6 +23,8 @@ func (r *TodoRepository) Create(todo *models.Todo) error {
 // 힌트: 특정 유저의 ID로만 필터링 (Where("user_id = ?", userID))
 func (r *TodoRepository) FindByUserID(userID uint, sortBy string) ([]models.Todo, error) {
 	var todos []models.Todo
+
+	query := r.db.Where("user_id = ?", userID)
 	orderQuery := "created_at desc"
 
 	if sortBy == "start_date" {
@@ -31,7 +33,9 @@ func (r *TodoRepository) FindByUserID(userID uint, sortBy string) ([]models.Todo
 		orderQuery = "due_date asc"
 	}
 
-	err := r.db.Where("user_id = ?", userID).Order(orderQuery).Find(&todos).Error
+	query = query.Order(orderQuery)
+
+	err := query.Find(&todos).Error
 
 	return todos, err
 }
