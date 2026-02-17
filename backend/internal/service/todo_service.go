@@ -66,6 +66,13 @@ func (s *TodoService) UpdateTodo(todoID uint, userID uint, data *models.Todo) er
 	if data.DueDate != nil {
 		todo.DueDate = data.DueDate
 	}
+
+	if todo.DueDate != nil && todo.StartDate != nil {
+		if todo.DueDate.Before(*todo.StartDate) {
+			return errors.New("마감일은 시작일보다 빠를 수 없습니다")
+		}
+	}
+
 	return s.repo.Save(todo)
 }
 

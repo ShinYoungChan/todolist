@@ -63,14 +63,21 @@ func main() {
 
 	// 💡 CORS 미들웨어 추가 (여기가 핵심!)
 	r.Use(func(c *gin.Context) {
+		// 1. 모든 도메인 허용 (Flutter Web 개발 시 필수)
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		// 2. PUT을 포함한 모든 메서드 허용
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		// 3. Authorization 헤더 허용 (JWT 토큰 사용 시 필수)
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+		// 4. 자격 증명 허용
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
+		// 브라우저의 OPTIONS 요청(Preflight)에 대해 200 또는 204로 즉시 응답
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+			c.AbortWithStatus(200) // 204 대신 200을 써도 무방합니다.
 			return
 		}
+
 		c.Next()
 	})
 

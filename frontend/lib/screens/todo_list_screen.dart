@@ -68,6 +68,66 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
+  void _showDatePicker(BuildContext context, Map todo, int todoId, String field, DateTime initialDate) {
+    DateTime selectedDate = initialDate;
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (_) => Container(
+        height: 300,
+        color: Colors.white,
+        child: Column(
+          children: [
+            // 상단 완료 버튼 바
+            Container(
+              height: 50,
+              color: const Color(0xfff8f8f8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CupertinoButton(
+                    child: const Text('완료'),
+                    onPressed: () async {
+                      // 검증 로직 추가
+                      if (field == 'due') {
+                        DateTime start = DateTime.parse(todo['start_date']);
+                        if (selectedDate.isBefore(start)) {
+                            // 경고창 띄우기
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("마감일은 시작일보다 빠를 수 없습니다."))
+                            );
+                            return; // 함수 종료 (서버에 안 보냄)
+                        }
+                      }
+                      // API 호출: 선택된 날짜를 ISO8601 포맷 문자열로 전송
+                      await _apiService.updateTodoDates(
+                        todoId,
+                        startDate: field == 'start' ? selectedDate : null, // DateTime 객체 그대로 전달
+                        dueDate: field == 'due' ? selectedDate : null,
+                      );
+                      Navigator.pop(context);
+                      setState(() {}); // 리스트 새로고침
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // 피커 본체
+            Expanded(
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.date,
+                initialDateTime: initialDate,
+                onDateTimeChanged: (DateTime newDate) {
+                  selectedDate = newDate; // 휠을 돌릴 때마다 변수에 저장
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,20 +236,39 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 // 2. 날짜 영역 (아이콘 + 시작일 ~ 마감일)
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.calendar_month,
-                                      size: 14,
-                                      color: Colors.grey,
-                                    ),
+                                    const Icon(Icons.calendar_month, size: 14, color: Colors.grey),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      "${todo['start_date']?.substring(0, 10) ?? '미정'} ~ ${todo['due_date']?.substring(0, 10) ?? '미정'}",
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: isDone
-                                            ? Colors.grey
-                                            : Colors.blueGrey,
-                                        fontWeight: FontWeight.w500,
+                                    // 시작일 클릭
+                                    GestureDetector(
+                                      onTap: () => _showDatePicker(
+                                        context, 
+                                        todo,
+                                        todo['id'], 
+                                        'start', 
+                                        DateTime.parse(todo['start_date']),
+                                      ),
+                                      child: Text(
+                                        todo['start_date']?.substring(0, 10) ?? '시작일',
+                                        style: const TextStyle(fontSize: 11, color: Colors.blue, decoration: TextDecoration.underline),
+                                      ),
+                                    ),
+                                    const Text(" ~ ", style: TextStyle(fontSize: 11)),
+                                    // 마감일 클릭
+                                    GestureDetector(
+                                      behavior: HitTestBehavior.opaque, // 👈 이거 추가! 빈 공간을 눌러도 반응하게 합니다.
+                                      onTap: () => _showDatePicker(
+                                        context, 
+                                        todo,
+                                        todo['id'], 
+                                        'due', 
+                                        DateTime.parse(todo['due_date'] ?? DateTime.now().toString()),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2), // 👈 터치 영역 확보
+                                        child: Text(
+                                          todo['due_date']?.substring(0, 10) ?? '마감일',
+                                          style: const TextStyle(fontSize: 11, color: Colors.redAccent),
+                                        ),
                                       ),
                                     ),
                                   ],
