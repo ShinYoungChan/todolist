@@ -30,8 +30,8 @@ func (s *TodoService) AddTodo(todo *models.Todo) error {
 }
 
 // 힌트: 유저별 목록 가져오기 로직
-func (s *TodoService) GetUserTodos(userID uint, sortBy string) ([]models.Todo, error) {
-	return s.repo.FindByUserID(userID, sortBy)
+func (s *TodoService) GetUserTodos(userID uint, sortBy, filter, keyword string) ([]models.Todo, error) {
+	return s.repo.FindByUserID(userID, sortBy, filter, keyword)
 }
 
 func (s *TodoService) UpdateTodo(todoID uint, userID uint, data *models.Todo) error {

@@ -12,6 +12,8 @@ class TodoListScreen extends StatefulWidget {
 class _TodoListScreenState extends State<TodoListScreen> {
   final ApiService _apiService = ApiService();
   String _currentSort = "created_at";
+  String _filter = "all";
+  String _keyword = "";
 
   void _showAddTodoDialog() {
     // 입력값을 제어할 컨트롤러 두 개 생성
@@ -128,6 +130,24 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
+  Widget _buildFilterChip(String label, String value) {
+    return ChoiceChip(
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      selected: _filter == value,
+      showCheckmark: false,
+      selectedColor: Colors.blueAccent.withOpacity(0.2), // 필터는 정렬과 색상을 다르게 하면 구분하기 좋습니다.
+      onSelected: (bool selected) {
+        if (selected) {
+          setState(() {
+            _filter = value;
+          });
+        }
+      },
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+      visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,6 +166,42 @@ class _TodoListScreenState extends State<TodoListScreen> {
         children: [
           // 1. 상단 정렬 버튼 영역
           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "할 일 검색...",
+                prefixIcon: const Icon(Icons.search),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                fillColor: Colors.grey[100],
+                filled: true,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _keyword = value; // 키워드 저장 후 리스트 새로고침
+                });
+              },
+            ),
+          ),
+
+          // 💡 2. 필터 칩 영역 (전체 / 진행중 / 완료)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildFilterChip("전체", "all"),
+                const SizedBox(width: 8),
+                _buildFilterChip("진행중", "pending"),
+                const SizedBox(width: 8),
+                _buildFilterChip("완료", "completed"),
+              ],
+            ),
+          ),
+
+          // 💡 3. 기존 정렬 버튼 영역 (한 줄 띄우기 위해 Divider 추가 가능)
+          const Divider(height: 1),
+          Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -162,7 +218,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
           // 2. 리스트 영역 (Expanded로 감싸야 Column 안에서 정상 작동합니다)
           Expanded(
             child: FutureBuilder(
-              future: _apiService.getTodos(_currentSort),
+              future: _apiService.getTodos(_currentSort, _filter, _keyword),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

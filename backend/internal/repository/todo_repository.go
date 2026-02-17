@@ -21,12 +21,22 @@ func (r *TodoRepository) Create(todo *models.Todo) error {
 }
 
 // 힌트: 특정 유저의 ID로만 필터링 (Where("user_id = ?", userID))
-func (r *TodoRepository) FindByUserID(userID uint, sortBy string) ([]models.Todo, error) {
+func (r *TodoRepository) FindByUserID(userID uint, sortBy, filter, keyword string) ([]models.Todo, error) {
 	var todos []models.Todo
 
 	query := r.db.Where("user_id = ?", userID)
 	orderQuery := "created_at desc"
 
+	if filter == "completed" {
+		query.Where("status = ?", true)
+	} else if filter == "pending" {
+		query.Where("status = ?", false)
+	}
+
+	if keyword != "" {
+		search := "%" + keyword + "%"
+		query.Where("(title LIKE ? OR content LIKE ?)", search, search)
+	}
 	if sortBy == "start_date" {
 		orderQuery = "start_date asc"
 	} else if sortBy == "due_date" {
