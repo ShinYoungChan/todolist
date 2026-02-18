@@ -46,13 +46,14 @@ func main() {
 		log.Fatalf("DB 연결 실패: %v", err)
 	}
 
-	if err := db.AutoMigrate(&models.User{}, &models.Todo{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Todo{}, &models.RefreshToken{}); err != nil {
 		log.Fatalf("마이그레이션 실패: %v", err)
 	}
 
 	// 의존성 주입
+	tokenRepo := repository.NewTokenRepository(db)
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo, jwtSecret)
+	userService := service.NewUserService(userRepo, tokenRepo, jwtSecret)
 	userHandler := handlers.NewUserHandler(userService)
 
 	todoRepo := repository.NewTodoRepository(db)
