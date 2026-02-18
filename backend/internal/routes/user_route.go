@@ -9,4 +9,5 @@ import (
 func SetupUserRoutes(r *gin.Engine, h *handlers.UserHandler) {
 	r.POST("/signup", h.Signup)
 	r.POST("/login", h.Login)
+	r.POST("/refresh", h.RefreshToken)
 }
