@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -27,8 +28,19 @@ func AuthMiddleware(secretKey string) gin.HandlerFunc {
 		})
 
 		// 4. 검증 실패 처리
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "유효하지 않은 토큰입니다."})
+		if err != nil {
+			// 에러의 종류를 확인합니다.
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"code":  "TOKEN_EXPIRED", // 프론트가 읽을 코드
+					"error": "토큰이 만료되었습니다.",
+				})
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"code":  "INVALID_TOKEN",
+					"error": "유효하지 않은 토큰입니다.",
+				})
+			}
 			c.Abort()
 			return
 		}
@@ -41,5 +53,24 @@ func AuthMiddleware(secretKey string) gin.HandlerFunc {
 		}
 
 		c.Next() // 다음 단계(실제 핸들러)로 진행
+	}
+}
+
+func GetUserID(c *gin.Context) uint {
+	val, exists := c.Get("user_id")
+
+	if !exists {
+		return 0
+	}
+	// 어떤 숫자 타입이든 uint로 안전하게 변환하는 스킬
+	switch v := val.(type) {
+	case uint:
+		return v
+	case float64:
+		return uint(v)
+	case int:
+		return uint(v)
+	default:
+		return 0
 	}
 }
