@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"backend/internal/middleware"
 	"backend/internal/models"
 	"backend/internal/response"
 	"backend/internal/service"
@@ -23,11 +24,9 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 	// 힌트 1: c.Get("user_id")를 통해 미들웨어가 넣어준 유저 식별자 추출
 	// 힌트 2: 추출한 user_id를 Todo 모델의 UserID 필드에 할당
 	// 힌트 3: c.ShouldBindJSON으로 할 일 내용(Title 등) 받기
-	val, exists := c.Get("user_id")
-	userID := uint(val.(float64))
-
-	if !exists {
-		response.Error(c, http.StatusUnauthorized, "유저 정보를 찾을 수 없습니다.")
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Error(c, http.StatusUnauthorized, "인증 정보가 유효하지 않습니다.")
 		return
 	}
 
@@ -55,11 +54,9 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 
 func (h *TodoHandler) GetTodos(c *gin.Context) {
 	// 힌트: 미들웨어에서 받은 user_id로 해당 유저의 목록만 요청
-	val, exists := c.Get("user_id")
-	userID := uint(val.(float64))
-
-	if !exists {
-		response.Error(c, http.StatusUnauthorized, "유저 정보를 찾을 수 없습니다.")
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Error(c, http.StatusUnauthorized, "인증 정보가 유효하지 않습니다.")
 		return
 	}
 
@@ -87,11 +84,9 @@ func (h *TodoHandler) UpdateTodo(c *gin.Context) {
 		return
 	}
 
-	val, exists := c.Get("user_id")
-	userID := uint(val.(float64))
-
-	if !exists {
-		response.Error(c, http.StatusUnauthorized, "유저 정보를 찾을 수 없습니다.")
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Error(c, http.StatusUnauthorized, "인증 정보가 유효하지 않습니다.")
 		return
 	}
 
@@ -118,11 +113,9 @@ func (h *TodoHandler) DeleteTodo(c *gin.Context) {
 		return
 	}
 
-	val, exists := c.Get("user_id")
-	userID := uint(val.(float64))
-
-	if !exists {
-		response.Error(c, http.StatusUnauthorized, "유저 정보를 찾을 수 없습니다.")
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Error(c, http.StatusUnauthorized, "인증 정보가 유효하지 않습니다.")
 		return
 	}
 
