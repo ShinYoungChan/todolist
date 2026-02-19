@@ -82,7 +82,7 @@ func main() {
 		c.Next()
 	})
 
-	routes.SetupUserRoutes(r, userHandler)
+	routes.SetupUserRoutes(r, userHandler, jwtSecret)
 	routes.SetupTodoRoutes(r, todoHandler, jwtSecret)
 
 	r.Run(":" + port)

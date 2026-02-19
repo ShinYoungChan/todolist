@@ -57,3 +57,19 @@ func (r *TokenRepository) DeleteByUserID(userID uint) error {
 	}
 	return nil
 }
+
+// 유저 ID 전체 로그아웃
+func (r *TokenRepository) DeleteByUserIDAll(userID uint) error {
+	return r.db.Where("user_id = ?", userID).Delete(&models.RefreshToken{}).Error
+}
+
+// 유저 ID 1개 로그아웃
+func (r *TokenRepository) DeleteByTokenAndUserID(userID uint, token string) error {
+	// 토큰 값도 일치하고, 주인(userID)도 일치하는 행만 삭제!
+	result := r.db.Where("token = ? AND user_id = ?", token, userID).Delete(&models.RefreshToken{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
