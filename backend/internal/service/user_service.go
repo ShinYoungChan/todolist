@@ -143,3 +143,11 @@ func (s *UserService) ValidateRefreshToken(token string) (string, string, error)
 
 	return newAccessToken, newRefreshToken, err
 }
+
+func (s *UserService) RevokeToken(userID uint) error {
+	return s.tokenRepo.DeleteByUserIDAll(userID)
+}
+
+func (s *UserService) RevokeSpecificToken(userID uint, token string) error {
+	return s.tokenRepo.DeleteByTokenAndUserID(userID, token)
+}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"backend/internal/middleware"
 	"backend/internal/models"
 	"backend/internal/response"
 	"backend/internal/service"
@@ -92,4 +93,35 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{"access_token": accessToken, "refresh_token": refreshToken})
+}
+
+func (h *UserHandler) Logout(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		response.Error(c, http.StatusUnauthorized, "인증 정보가 유효하지 않습니다.")
+		return
+	}
+
+	var req struct {
+		RefreshToken string `json:"refresh_token" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "리프레시 토큰이 필요합니다.")
+		return
+	}
+	// 유저 ID 전체 로그아웃
+	if err := h.service.RevokeToken(userID); err != nil {
+		response.Error(c, http.StatusInternalServerError, "로그아웃 처리 중 오류 발생")
+		return
+	}
+
+	/* 유저 ID 계정 1개만 로그아웃
+		err := h.service.RevokeSpecificToken(userID, req.RefreshToken)
+	    if err != nil {
+	        response.Error(c, http.StatusInternalServerError, "로그아웃 실패")
+	        return
+	    }
+	*/
+
+	response.SuccessMsg(c, "로그아웃 성공")
 }
