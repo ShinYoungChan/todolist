@@ -46,7 +46,7 @@ func main() {
 		log.Fatalf("DB 연결 실패: %v", err)
 	}
 
-	if err := db.AutoMigrate(&models.User{}, &models.Todo{}, &models.RefreshToken{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Category{}, &models.Todo{}, &models.RefreshToken{}); err != nil {
 		log.Fatalf("마이그레이션 실패: %v", err)
 	}
 
@@ -59,6 +59,10 @@ func main() {
 	todoRepo := repository.NewTodoRepository(db)
 	todoService := service.NewTodoService(todoRepo)
 	todoHandler := handlers.NewTodoHandler(todoService)
+
+	categoryRepo := repository.NewCategoryRepository(db)
+	categoryService := service.NewCategoryService(categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	r := gin.Default()
 
@@ -84,6 +88,7 @@ func main() {
 
 	routes.SetupUserRoutes(r, userHandler, jwtSecret)
 	routes.SetupTodoRoutes(r, todoHandler, jwtSecret)
+	routes.SetupCategoryRoutes(r, categoryHandler, jwtSecret)
 
 	r.Run(":" + port)
 }

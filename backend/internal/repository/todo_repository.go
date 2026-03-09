@@ -45,7 +45,7 @@ func (r *TodoRepository) FindByUserID(userID uint, sortBy, filter, keyword strin
 
 	query = query.Order(orderQuery)
 
-	err := query.Find(&todos).Error
+	err := query.Preload("Category").Find(&todos).Error
 
 	return todos, err
 }
@@ -81,7 +81,12 @@ func (r *TodoRepository) Delete(todoID, userID uint) error {
 // 1. 특정 Todo 하나를 가져오는 함수
 func (r *TodoRepository) FindByID(todoID, userID uint) (*models.Todo, error) {
 	var todo models.Todo
-	err := r.db.Where("id = ? AND user_id = ?", todoID, userID).First(&todo).Error
+	err := r.db.Where("id = ? AND user_id = ?", todoID, userID).Preload("Category").First(&todo).Error
+
+	if err != nil {
+		return nil, err // 에러 발생 시 명시적으로 nil 리턴
+	}
+
 	return &todo, err
 }
 
