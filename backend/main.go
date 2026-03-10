@@ -65,6 +65,7 @@ func main() {
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	r := gin.Default()
+	r.Static("/uploads", "./uploads")
 
 	// 💡 CORS 미들웨어 추가 (여기가 핵심!)
 	r.Use(func(c *gin.Context) {
