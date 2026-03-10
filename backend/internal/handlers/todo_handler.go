@@ -63,8 +63,9 @@ func (h *TodoHandler) GetTodos(c *gin.Context) {
 	sortBy := c.DefaultQuery("sort", "created_at")
 	filter := c.DefaultQuery("filter", "all")
 	keyword := c.Query("keyword")
+	categoryID := c.Query("category_id")
 
-	todos, err := h.service.GetUserTodos(userID, sortBy, filter, keyword)
+	todos, err := h.service.GetUserTodos(userID, sortBy, filter, keyword, categoryID)
 
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
