@@ -79,3 +79,7 @@ func (s *TodoService) UpdateTodo(todoID uint, userID uint, data *models.Todo) er
 func (s *TodoService) DeleteTodo(todoID uint, userID uint) error {
 	return s.repo.Delete(todoID, userID)
 }
+
+func (s *TodoService) GetTodoByID(id, userID uint) (*models.Todo, error) {
+	return s.repo.FindByID(id, userID) // 이미 만들어두신 리포지토리 함수 호출
+}

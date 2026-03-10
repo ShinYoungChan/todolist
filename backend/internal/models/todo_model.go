@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type Todo struct {
 	ID          uint       `gorm:"primaryKey" json:"id"`
@@ -15,4 +18,15 @@ type Todo struct {
 	CategoryID  *uint      `json:"category_id"`           // null 허용을 위해 포인터 사용
 	Category    Category   `gorm:"foreignKey:CategoryID"` // Relation 설정
 	ImageURL    *string    `json:"image_url"`             // 사진이 없을 수도 있으니 포인터(*)로 null 허용
+}
+
+// TodoCreateRequest: 할 일 생성 시 데이터를 받기 위한 구조체
+type TodoCreateRequest struct {
+	Title      string `form:"title" binding:"required"`
+	Content    string `form:"content"`
+	CategoryID *uint  `form:"category_id"`
+	// 파일 자체를 받기 위한 필드 (multipart.FileHeader)
+	Image     *multipart.FileHeader `form:"image"`
+	StartDate *time.Time            `form:"start_date" time_format:"2006-01-02"`
+	DueDate   *time.Time            `form:"due_date" time_format:"2006-01-02"`
 }
